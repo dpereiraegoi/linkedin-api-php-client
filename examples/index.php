@@ -66,70 +66,95 @@ if (isset($_GET['code'])) { // we are returning back from LinkedIn with the code
             $emailInfo = $email = $client->get('emailAddress', ['q' => 'members', 'projection' => '(elements*(handle~))']);
             pp($emailInfo);
 
-            $share = $client->post(                 
-                'ugcPosts',                         
-                [                                   
-                    'author' => 'urn:li:person:' . $profile['id'],
-                    'lifecycleState' => 'PUBLISHED',
-                    'specificContent' => [          
-                        'com.linkedin.ugc.ShareContent' => [
-                            'shareCommentary' => [
-                                'text' => 'Checkout this amazing PHP SDK for LinkedIn!'
-                            ],
-                            'shareMediaCategory' => 'ARTICLE',
-                            'media' => [
-                                [
-                                    'status' => 'READY',
-                                    'description' => [
-                                        'text' => 'OAuth 2 flow, composer Package.'
-                                    ],
-                                    'originalUrl' => 'https://github.com/zoonman/linkedin-api-php-client',
-                                    'title' => [
-                                        'text' => 'PHP Client for LinkedIn API'
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ],
-                    'visibility' => [
-                        'com.linkedin.ugc.MemberNetworkVisibility' => 'CONNECTIONS'
-                    ]
-                ]
-            );
-            pp($share);
+            // Post on personal profile
+            // $share = $client->post(                 
+            //     'ugcPosts',                         
+            //     [                                   
+            //         'author' => 'urn:li:person:' . $profile['id'],
+            //         'lifecycleState' => 'PUBLISHED',
+            //         'specificContent' => [          
+            //             'com.linkedin.ugc.ShareContent' => [
+            //                 'shareCommentary' => [
+            //                     'text' => 'Checkout this amazing PHP SDK for LinkedIn!'
+            //                 ],
+            //                 'shareMediaCategory' => 'ARTICLE',
+            //                 'media' => [
+            //                     [
+            //                         'status' => 'READY',
+            //                         'description' => [
+            //                             'text' => 'OAuth 2 flow, composer Package.'
+            //                         ],
+            //                         'originalUrl' => 'https://github.com/zoonman/linkedin-api-php-client',
+            //                         'title' => [
+            //                             'text' => 'PHP Client for LinkedIn API'
+            //                         ]
+            //                     ]
+            //                 ]
+            //             ]
+            //         ],
+            //         'visibility' => [
+            //             'com.linkedin.ugc.MemberNetworkVisibility' => 'CONNECTIONS'
+            //         ]
+            //     ]
+            // );
+            // pp($share);
 
-            // set sandboxed company page id to work with
-            // https://www.linkedin.com/company/devtestco
-            /* TODO!
-            $companyId = '2414183';
+            // Get Posts
+            // $shareInfo = $client->get('ugcPosts');
+            // pp($shareInfo);
 
+            // Get all Organizations assignee
             h1('Company information');
-            $companyInfo = $client->get('companies/' . $companyId . ':(id,name,num-followers,description)');
+            $companyInfo = $client->get('organizationalEntityAcls?q=roleAssignee');
+            
+            // Company for tests
+            $companyId = '43265076';
+            // $companyInfo = $client->get('organizations/' . $companyId );
             pp($companyInfo);
+            
 
-            h1('Sharing on company page');
-            $companyShare = $client->post(
-                'companies/' . $companyId . '/shares',
-                [
-                    'comment' =>
-                        sprintf(
-                            '%s %s just tried this amazing PHP SDK for LinkedIn!',
-                            $profile['firstName'],
-                            $profile['lastName']
-                        ),
-                    'content' => [
-                        'title' => 'PHP Client for LinkedIn API',
-                        'description' => 'OAuth 2 flow, composer Package',
-                        'submitted-url' => 'https://github.com/zoonman/linkedin-api-php-client',
-                        'submitted-image-url' => 'https://github.com/fluidicon.png',
-                    ],
-                    'visibility' => [
-                        'code' => 'anyone'
-                    ]
-                ]
-            );
-            pp($companyShare);
-            */
+            // Create post on organization
+            //     $share = $client->post(                 
+            //     'ugcPosts',                         
+            //     [                                   
+            //         'author' => 'urn:li:organization:' . $companyId,
+            //         'lifecycleState' => 'PUBLISHED',
+            //         'specificContent' => [          
+            //             'com.linkedin.ugc.ShareContent' => [
+            //                 'shareCommentary' => [
+            //                     'text' => 'Checkout this amazing PHP SDK for LinkedIn!'
+            //                 ],
+            //                 'shareMediaCategory' => 'ARTICLE',
+            //                 'media' => [
+            //                     [
+            //                         'status' => 'READY',
+            //                         'description' => [
+            //                             'text' => 'OAuth 2 flow, composer Package.'
+            //                         ],
+            //                         'originalUrl' => 'https://github.com/zoonman/linkedin-api-php-client',
+            //                         'title' => [
+            //                             'text' => 'PHP Client for LinkedIn API'
+            //                         ]
+            //                     ]
+            //                 ]
+            //             ]
+            //         ],
+            //         'visibility' => [
+            //             // 'com.linkedin.ugc.MemberNetworkVisibility' => 'CONNECTIONS'
+            //             'com.linkedin.ugc.MemberNetworkVisibility' => 'PUBLIC'
+            //         ]
+            //     ]
+            // );
+            // pp($share);
+
+
+
+            // Get statistics
+            $postId = 6667085581979389952;
+            $shareStats = $client->get('organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:'.$companyId.'&shares[0]=urn:li:share:'.$postId);
+
+            h1('Share Stats');
+            pp($shareStats);
 
             /*
             // Returns {"serviceErrorCode":100,"message":"Not enough permissions to access media resource","status":403}
@@ -165,6 +190,9 @@ if (isset($_GET['code'])) { // we are returning back from LinkedIn with the code
         Scope::READ_LITE_PROFILE,
         Scope::READ_EMAIL_ADDRESS,
         Scope::SHARE_AS_USER,
+        Scope::READ_ORGANIZATION_SHARES,
+        Scope::SHARE_AS_ORGANIZATION,
+        Scope::MANAGE_COMPANY
     ];
     $loginUrl = $client->getLoginUrl($scopes); // get url on LinkedIn to start linking
     $_SESSION['state'] = $client->getState(); // save state for future validation
